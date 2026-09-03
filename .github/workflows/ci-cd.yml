@@ -1,0 +1,97 @@
+name: CI/CD Pipeline
+ 
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+ 
+# Least privilege on the GitHub side too:
+# id-token: write -> lets the job prove "who I am" to AWS (OIDC)
+# contents: read  -> the job can read the code, nothing more
+permissions:
+  id-token: write
+  contents: read
+ 
+jobs:
+  # ---------------- 1. TESTS ----------------
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+ 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+ 
+      - name: Run unit tests
+        run: node --test tests/
+ 
+  # ---------------- 2. DEPLOY TO STAGING (automatic) ----------------
+  deploy-staging:
+    name: Deploy to Staging
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+ 
+      - name: Configure AWS credentials (OIDC — no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+ 
+      - name: Upload files to the staging S3 bucket
+        run: |
+          aws s3 sync . s3://${{ vars.BUCKET_NAME }} --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "infra/*" \
+            --exclude "tests/*" \
+            --exclude "README.md" \
+            --exclude ".gitignore"
+ 
+      - name: Invalidate the CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.DISTRIBUTION_ID }} \
+            --paths "/*"
+ 
+  # ---------------- 3. DEPLOY TO PRODUCTION (needs human approval) ----------------
+  deploy-production:
+    name: Deploy to Production
+    needs: deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+ 
+      - name: Configure AWS credentials (OIDC — no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+ 
+      - name: Upload files to the production S3 bucket
+        run: |
+          aws s3 sync . s3://${{ vars.BUCKET_NAME }} --delete \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "infra/*" \
+            --exclude "tests/*" \
+            --exclude "README.md" \
+            --exclude ".gitignore"
+ 
+      - name: Invalidate the CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ vars.DISTRIBUTION_ID }} \
+            --paths "/*"

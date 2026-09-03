@@ -1,0 +1,7 @@
+{
+  "Name": "taskflow-oac",
+  "Description": "Origin Access Control — lets only CloudFront read the private TaskFlow S3 buckets",
+  "ProtocolAccessControl": "sign-only",
+  "SignatureVersion": "SIGV4_ALWAYS",
+  "OriginAccessControlOriginType": "s3"
+}

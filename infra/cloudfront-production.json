@@ -1,0 +1,41 @@
+{
+  "CallerReference": "taskflow-production-001",
+  "Comment": "TaskFlow PRODUCTION distribution",
+  "Enabled": true,
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "taskflow-production-origin",
+        "DomainName": "<PRODUCTION_BUCKET>.s3.<AWS_REGION>.amazonaws.com",
+        "OriginAccessControlId": "<OAC_ID>",
+        "S3OriginConfig": {
+          "OriginAccessIdentity": ""
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "taskflow-production-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": {
+      "Quantity": 2,
+      "Items": ["GET", "HEAD"]
+    },
+    "CachedMethods": {
+      "Quantity": 2,
+      "Items": ["GET", "HEAD"]
+    },
+    "Compress": true,
+    "ForwardHeaders": {
+      "Quantity": 0
+    },
+    "CookiesForward": "none",
+    "QueryString": false,
+    "TrustedSigners": {
+      "Enabled": false,
+      "Quantity": 0
+    }
+  }
+}

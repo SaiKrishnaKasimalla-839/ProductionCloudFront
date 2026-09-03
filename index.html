@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow — Team Task Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>TaskFlow</h1>
+    <p class="tagline">A simple team task manager — deployed to AWS through a CI/CD pipeline</p>
+  </header>
+
+  <main class="card">
+    <form id="task-form" class="task-form">
+      <input
+        id="task-input"
+        type="text"
+        placeholder="What needs to be done?"
+        autocomplete="off"
+        maxlength="120"
+      />
+      <button type="submit">Add</button>
+    </form>
+    <p id="form-error" class="error hidden"></p>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="active">Active</button>
+      <button class="filter-btn" data-filter="done">Done</button>
+    </div>
+
+    <ul id="task-list" class="task-list"></ul>
+    <p id="empty-message" class="empty hidden">Nothing here yet. Add your first task! 🎉</p>
+
+    <div class="stats-bar">
+      <span id="stats">0 total · 0 active · 0 done</span>
+      <span class="env-badge">v1.0</span>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <p>TaskFlow v1.0 — built for learning CI/CD with GitHub Actions on AWS</p>
+  </footer>
+
+  <script src="js/tasks.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
